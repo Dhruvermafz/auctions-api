@@ -6,7 +6,7 @@ Users also receive a notification once an auction starts/ends.
 
 ### Links
 - <a href="https://live-auctions.netlify.app/"><strong>live website</strong></a>
-- <a href="https://youtu.be/8IAzQQJ47to"><strong>demo video</strong></a>
+- <a href="https://auction-api-xbhd.onrender.com/"><strong>api hosted on.</strong></a>
   <br>
   <br>
 
@@ -41,18 +41,7 @@ Hosting:
 - Heroku (server)
 - Netlify (client)
 
-## Screenshots:
-<p align="center">
-  <a href="https://live-auctions.netlify.app/">
-    <img width="600" src="./screenshots/home.jpg">
-  </a>
-</p>
-<br>
-<p align="center">
-  <a href="https://live-auctions.netlify.app/">
-    <img width="600" src="./screenshots/ad.jpg">
-  </a>
-</p>
+
 
 # Notes on using the website
 Project is hosted <a href="https://live-auctions.netlify.app/"><strong>here</strong></a>
