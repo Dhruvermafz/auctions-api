@@ -1,18 +1,18 @@
-const swaggerJsDoc = require('swagger-jsdoc');
+const swaggerJsDoc = require("swagger-jsdoc");
 
-const apiBaseUrl = process.env.API_BASE_URL || 'http://localhost:5000';
+const apiBaseUrl = process.env.API_BASE_URL || "http://localhost:4000";
 const options = {
-  apis: ['./documentation/doc.yaml'],
+  apis: ["./documentation/doc.yaml"],
   definition: {
-    swagger: '2.0',
+    swagger: "2.0",
     info: {
-      title: 'Live Auctions API',
-      version: '1.0.0',
-      desciption: 'REST api for conducting live auctions.',
+      title: "Live Auctions API",
+      version: "1.0.0",
+      desciption: "REST api for conducting live auctions.",
       host: apiBaseUrl,
-      basePath: '/',
-      consumes: 'application/json',
-      produces: 'application/json',
+      basePath: "/",
+      consumes: "application/json",
+      produces: "application/json",
     },
   },
   server: [
