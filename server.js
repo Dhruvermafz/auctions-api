@@ -1,43 +1,46 @@
 const express = require("express");
 require("dotenv").config();
 const connectDb = require("./db/dbconnect");
-const { createServer } = require("http");
-const multer = require("multer");
-const socketio = require("./socket");
+const http = require("http");
+const { Server } = require("socket.io");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDoc = require("./documentation/swaggerSetup");
-var cors = require("cors");
+const cors = require("cors");
+const multer = require("multer");
 
-// Use this after the variable declaration
 const app = express();
-const server = createServer(app);
-const io = socketio.init(server);
-const adIo = socketio.initAdIo(server, "/socket/adpage");
+const server = http.createServer(app);
 const upload = multer({ dest: "uploads/" });
+const firebaseApp = require("./utils/firebase");
 
-// Body parser
+// Middleware
 app.use(express.json());
+// app.use(cors()); // Enable CORS for all routes
 
-// CORS
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "OPTIONS, GET, POST, PUT, PATCH, DELETE"
-  );
-  res.setHeader("Access-Control-Allow-Headers", "*");
-  next();
+// Socket.io setup
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3000",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  },
 });
-app.use(cors());
-// Documentation setup
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 
-// Default route
-app.get("/", (req, res, next) => {
-  res.send("Server running");
+// Socket.io logic (move to a separate module if it gets more complex)
+io.on("connection", (socket) => {
+  console.log("Socket IO client connected");
+
+  socket.on("disconnect", (reason) => {
+    console.log("Socket IO client disconnected");
+  });
+
+  socket.on("leaveHome", () => {
+    socket.disconnect();
+  });
 });
 
 // Routes
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDoc));
 app.use("/auth", require("./routes/auth"));
 app.use("/user", require("./routes/user"));
 app.use("/ad", require("./routes/ad"));
@@ -46,33 +49,26 @@ app.use("/room", require("./routes/room"));
 app.use("/auction", require("./routes/auction"));
 app.use("/upload", require("./routes/uploads"));
 
-// Socket.io setup
-const PORT = process.env.PORT || 5000;
-io.on("connection", (socket) => {
-  // console.log('### Socket IO client connected');
-  socket.on("disconnect", (reason) => {
-    // console.log('### Socket IO client disconnected');
-  });
-  socket.on("leaveHome", () => {
-    socket.disconnect();
-  });
+// Default route
+app.get("/", (req, res) => {
+  res.send("Server running");
 });
-adIo.on("connect", (socket) => {
-  // socket.join('testroom')
-  socket.on("joinAd", ({ ad }) => {
-    socket.join(ad.toString());
-    // console.log(`User joined room ${ad}`);
-  });
-  socket.on("leaveAd", ({ ad }) => {
-    socket.leave(ad.toString());
-    // console.log(`Left room ${ad}`);
-  });
-  socket.on("disconnect", () => {
-    // console.log('User has disconnect from ad');
-  });
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: "Internal server error" });
 });
-// Connect DB and Initialize server
-connectDb();
-server.listen(PORT, () => {
-  console.log(`### Server running on port ${PORT}`);
-});
+
+// Connect to MongoDB and Initialize server
+connectDb()
+  .then(() => {
+    const PORT = process.env.PORT || 5000;
+    server.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Failed to connect to the database:", err);
+    process.exit(1);
+  });
