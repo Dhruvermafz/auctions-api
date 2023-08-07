@@ -18,35 +18,6 @@ const asyncErrorHandler = (handler) => (req, res, next) => {
   handler(req, res).catch(next);
 };
 
-// @route   POST /upload/image
-// @desc    Upload product images
-// @access  protected
-// router.post(
-//   "/image",
-//   isAuth,
-//   upload.single("image"),
-//   asyncErrorHandler(async (req, res) => {
-//     const file = req.file;
-//     const result = await uploadFileToFirebase(file);
-//     await unlinkFile(file.path);
-//     res.status(200).json({ imagePath: `/upload/image/${result.Key}` });
-//   })
-// );
-
-// // @route   GET /upload/image/:key
-// // @desc    Get image with key
-// // @access  protected
-// router.get(
-//   "/image/:key",
-//   asyncErrorHandler(async (req, res) => {
-//     const fileBuffer = await getDownloadURLFromFirebase(req.params.key);
-//     res.status(200).send(fileBuffer);
-//   })
-// );
-// @route   POST /upload/image
-// @desc    Upload product images
-// @access  protected
-
 router.post(
   "/image",
   isAuth,
@@ -75,7 +46,7 @@ router.get(
   })
 );
 
-router.post("/upload", upload.single("file"), async (req, res) => {
+router.post("/uploads", upload.single("file"), async (req, res) => {
   try {
     const file = req.file;
 
@@ -84,8 +55,6 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     }
 
     const snapshot = await uploadFileToFirebase(file);
-    // Optionally, you can send back the URL to the uploaded file
-    // const downloadURL = await getDownloadURLFromFirebase(file.name);
 
     res.status(200).json({ message: "File uploaded successfully" });
   } catch (error) {

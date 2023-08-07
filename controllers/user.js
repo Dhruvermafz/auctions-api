@@ -48,6 +48,7 @@ exports.registerUser = async (req, res, next) => {
       }
       res.status(200).json({ token });
     });
+    
   } catch (err) {
     console.log(err);
     res.status(500).json({ errors: [{ msg: 'User already exists' }] });

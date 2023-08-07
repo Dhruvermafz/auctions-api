@@ -1,30 +1,53 @@
 const express = require("express");
 require("dotenv").config();
 const connectDb = require("./db/dbconnect");
-const http = require("http");
-const { Server } = require("socket.io");
+const { createServer } = require("http");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDoc = require("./documentation/swaggerSetup");
-const cors = require("cors");
+const socketio = require("./socket");
 const multer = require("multer");
-
+const cors = require("cors");
 const app = express();
-const server = http.createServer(app);
+const server = createServer(app);
+const io = socketio.init(server);
+const adIo = socketio.initAdIo(server, "/socket/adpage");
 const upload = multer({ dest: "uploads/" });
 const firebaseApp = require("./utils/firebase");
 
-// Middleware
 app.use(express.json());
-// app.use(cors()); // Enable CORS for all routes
+const corsOptions = {
+  origin: "http://localhost:3000",
+  credentials: true, //access-control-allow-credentials:true
+  optionSuccessStatus: 200,
+};
+app.use(cors(corsOptions));
 
-// Socket.io setup
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  },
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "OPTIONS, GET, POST, PUT, PATCH, DELETE"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "*");
+  next();
 });
+// Middleware
+
+// Routes
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDoc));
+
+// Default route
+app.get("/", (req, res) => {
+  res.send("Server running");
+});
+
+app.use("/auth", require("./routes/auth"));
+app.use("/user", require("./routes/user"));
+app.use("/ad", require("./routes/ad"));
+app.use("/bid", require("./routes/bid"));
+app.use("/room", require("./routes/room"));
+app.use("/auction", require("./routes/auction"));
+app.use("/upload", require("./routes/uploads"));
 
 // Socket.io logic (move to a separate module if it gets more complex)
 io.on("connection", (socket) => {
@@ -39,19 +62,19 @@ io.on("connection", (socket) => {
   });
 });
 
-// Routes
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDoc));
-app.use("/auth", require("./routes/auth"));
-app.use("/user", require("./routes/user"));
-app.use("/ad", require("./routes/ad"));
-app.use("/bid", require("./routes/bid"));
-app.use("/room", require("./routes/room"));
-app.use("/auction", require("./routes/auction"));
-app.use("/upload", require("./routes/uploads"));
-
-// Default route
-app.get("/", (req, res) => {
-  res.send("Server running");
+adIo.on("connect", (socket) => {
+  // socket.join('testroom')
+  socket.on("joinAd", ({ ad }) => {
+    socket.join(ad.toString());
+    // console.log(`User joined room ${ad}`);
+  });
+  socket.on("leaveAd", ({ ad }) => {
+    socket.leave(ad.toString());
+    // console.log(`Left room ${ad}`);
+  });
+  socket.on("disconnect", () => {
+    // console.log('User has disconnect from ad');
+  });
 });
 
 // Error handling middleware
