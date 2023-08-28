@@ -5,9 +5,10 @@ let adIo;
 exports.init = (server) => {
   io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_BASE_URL,
-      methods: ["*"],
+      origin: "http://localhost:3000",
       allowedHeaders: ["*"],
+      methods: ["GET", "POST"],
+      credentials: true,
     },
   });
   return io;
@@ -16,9 +17,10 @@ exports.init = (server) => {
 exports.initAdIo = (server, path = "/socket/adpage") => {
   adIo = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_BASE_URL,
-      methods: ["*"],
+      origin: "http://localhost:3000",
       allowedHeaders: ["*"],
+      methods: ["GET", "POST"],
+      credentials: true,
     },
     path: path,
   });

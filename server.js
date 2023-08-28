@@ -11,8 +11,6 @@ const app = express();
 const server = createServer(app);
 const io = socketio.init(server);
 const adIo = socketio.initAdIo(server, "/socket/adpage");
-const upload = multer({ dest: "uploads/" });
-const firebaseApp = require("./utils/firebase");
 
 app.use(express.json());
 const corsOptions = {
@@ -66,14 +64,14 @@ adIo.on("connect", (socket) => {
   // socket.join('testroom')
   socket.on("joinAd", ({ ad }) => {
     socket.join(ad.toString());
-    // console.log(`User joined room ${ad}`);
+    console.log(`User joined room ${ad}`);
   });
   socket.on("leaveAd", ({ ad }) => {
     socket.leave(ad.toString());
-    // console.log(`Left room ${ad}`);
+    console.log(`Left room ${ad}`);
   });
   socket.on("disconnect", () => {
-    // console.log('User has disconnect from ad');
+    console.log("User has disconnect from ad");
   });
 });
 
