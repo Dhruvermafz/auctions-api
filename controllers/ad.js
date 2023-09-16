@@ -3,56 +3,59 @@ const Ad = require("../models/Ad");
 const Room = require("../models/Room");
 const User = require("../models/User");
 const io = require("../socket");
+const { cloudinary } = require("../utils/cloudinary");
+const upload = require("../utils/multermediaupload");
 
 // @route   POST /ad
 // @desc    Post a new ad
-exports.addAd = async (req, res, next) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      errors: errors.array(),
-    });
-  }
+(exports.addAd = upload.single("media")),
+  async (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        errors: errors.array(),
+      });
+    }
 
-  let { productName, basePrice, duration, image, category, description } =
-    req.body;
-  if (duration === null || duration === 0) duration = 300;
-  if (duration > 10800) duration = 3600;
-  image = image === "" ? "" : `${process.env.SERVER_BASE_URL}${image}`;
-  const timer = duration;
+    let { productName, basePrice, duration, image, category, description } =
+      req.body;
+    if (duration === null || duration === 0) duration = 300;
+    if (duration > 10800) duration = 3600;
+    image = image === "" ? "" : `${process.env.SERVER_BASE_URL}${image}`;
+    const timer = duration;
 
-  try {
-    let ad = new Ad({
-      productName,
-      description,
-      basePrice,
-      currentPrice: basePrice,
-      duration,
-      timer,
-      image,
-      category,
-      owner: req.user.id,
-    });
+    try {
+      let ad = new Ad({
+        productName,
+        description,
+        basePrice,
+        currentPrice: basePrice,
+        duration,
+        timer,
+        image,
+        category,
+        owner: req.user.id,
+      });
 
-    // Create room for auction
-    let room = new Room({ ad: ad._id });
-    room = await room.save();
+      // Create room for auction
+      let room = new Room({ ad: ad._id });
+      room = await room.save();
 
-    ad.room = room._id;
-    ad = await ad.save();
+      ad.room = room._id;
+      ad = await ad.save();
 
-    const user = await User.findById(ad.owner);
-    user.postedAds.push(ad._id);
-    await user.save();
+      const user = await User.findById(ad.owner);
+      user.postedAds.push(ad._id);
+      await user.save();
 
-    io.getIo().emit("addAd", { action: "add", ad: ad });
+      io.getIo().emit("addAd", { action: "add", ad: ad });
 
-    res.status(200).json({ ad, room });
-  } catch (err) {
-    console.log(err);
-    res.status(500).json({ errors: [{ msg: "Server error" }] });
-  }
-};
+      res.status(200).json({ ad, room });
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ errors: [{ msg: "Server error" }] });
+    }
+  };
 
 // @route   GET /ad
 // @desc    Retrieve list of all ads

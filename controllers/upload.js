@@ -1,8 +1,5 @@
-const multer = require("multer");
 const cloudinary = require("cloudinary").v2;
 require("dotenv").config();
-const storage = multer.memoryStorage();
-const upload = multer({ storage });
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -10,7 +7,7 @@ cloudinary.config({
   api_secret: process.env.SECRET,
 });
 
-const uploadImage = (req, res, next) => {
+exports.uploadImage = (req, res, next) => {
   try {
     if (!req.file) {
       return res.status(400).json({ error: "No file uploaded" });
@@ -19,7 +16,7 @@ const uploadImage = (req, res, next) => {
     const uploadOptions = { resource_type: "auto" };
 
     cloudinary.uploader
-      .upload_stream(uploadOptions, (error, result) => {
+      .upload(uploadOptions, (error, result) => {
         if (error) {
           console.error("Error uploading image to Cloudinary:", error);
           return res.status(500).json({ error: "Error uploading image" });
@@ -42,11 +39,10 @@ const uploadImage = (req, res, next) => {
   }
 };
 
-exports.upload = upload.single("image");
-exports.uploadImage = uploadImage;
+// exports.upload = upload.single("image");
 
 exports.getDownloadURLFromCloud = async (req, res) => {
-  const imageId = req.params.imageId;
+  const imageId = req.params.public_id;
 
   try {
     const result = await cloudinary.api.resource(imageId);
