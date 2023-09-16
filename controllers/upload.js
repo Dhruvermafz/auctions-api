@@ -16,10 +16,17 @@ exports.uploadImage = (req, res, next) => {
     const uploadOptions = { resource_type: "auto" };
 
     cloudinary.uploader
-      .upload(uploadOptions, (error, result) => {
+      .upload_stream(uploadOptions, (error, result) => {
         if (error) {
           console.error("Error uploading image to Cloudinary:", error);
           return res.status(500).json({ error: "Error uploading image" });
+        }
+
+        if (!result || !result.secure_url) {
+          console.error("Invalid response from Cloudinary:", result);
+          return res
+            .status(500)
+            .json({ error: "Invalid response from Cloudinary" });
         }
 
         const uploadedImage = {
@@ -29,6 +36,13 @@ exports.uploadImage = (req, res, next) => {
           width: result.width,
           height: result.height,
         };
+
+        // Check if the format is supported (e.g., you can add more supported formats as needed)
+        const supportedFormats = ["jpg", "jpeg", "png", "gif"];
+        if (!supportedFormats.includes(result.format.toLowerCase())) {
+          console.error("Unsupported image format:", result.format);
+          return res.status(400).json({ error: "Unsupported image format" });
+        }
 
         res.json({ message: "Image uploaded to Cloudinary", uploadedImage });
       })
