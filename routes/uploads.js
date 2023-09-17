@@ -32,7 +32,7 @@ router.post("/image", isAuth, upload.single("image"), async (req, res) => {
   try {
     const result = await uploadImage(file);
     await unlinkFile(file.path);
-    res.status(200).json({ imagePath: `/upload/image/${result.Key}` });
+    res.status(200).json({ imagePath: `/upload/image/${result.public_id}` });
   } catch (error) {
     console.log(error);
     res.status(500).json({ errors: { msg: "Server Error" } });

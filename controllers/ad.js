@@ -3,8 +3,6 @@ const Ad = require("../models/Ad");
 const Room = require("../models/Room");
 const User = require("../models/User");
 const io = require("../socket");
-const { cloudinary } = require("../utils/cloudinary");
-const upload = require("../utils/multermediaupload");
 
 // @route   POST /ad
 // @desc    Post a new ad
@@ -24,9 +22,6 @@ exports.addAd = async (req, res, next) => {
   const timer = duration;
 
   try {
-    const uploadResponse = await cloudinary.uploader.upload(req.file.path);
-    const imageUrl = uploadResponse.secure_url;
-
     let ad = new Ad({
       productName,
       description,
@@ -34,7 +29,7 @@ exports.addAd = async (req, res, next) => {
       currentPrice: basePrice,
       duration,
       timer,
-      image: imageUrl,
+      image,
       category,
       owner: req.user.id,
     });
