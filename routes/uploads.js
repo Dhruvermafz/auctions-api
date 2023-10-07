@@ -10,33 +10,42 @@ const {
   getDownloadURLFromCloud,
 } = require("../controllers/upload");
 
-const upload = multer({ dest: "uploads" });
+const cloudinaryStorage = multer.memoryStorage();
+const uploadCloudinary = multer({ storage: cloudinaryStorage });
 
 // @route   GET /upload/image/:key
 // @desc    Get image with key
 // @access  protected
-router.get("/image/:imageId", async (req, res) => {
+router.get("/image/:imageId", async (req, res, next) => {
   try {
-    const fileBuffer = await getDownloadURLFromCloud(req.params.key);
+    const downloadURL = await getDownloadURLFromCloud(req.params.key);
 
-    res.status(200).send(fileBuffer);
+    res.status(200).json(downloadURL);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ errors: { msg: "Server Error" } });
+    next(error);
   }
 });
 
-router.post("/image", isAuth, upload.single("image"), async (req, res) => {
-  const file = req.file;
+router.post(
+  "/image",
+  isAuth,
+  uploadCloudinary.single("image"),
+  async (req, res, next) => {
+    try {
+      const file = req.file;
 
-  try {
-    const result = await uploadImage(file);
-    await unlinkFile(file.path);
-    res.status(200).json({ imagePath: `/upload/image/${result.public_id}` });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ errors: { msg: "Server Error" } });
+      if (!file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+      const result = await uploadImage(file);
+      await unlinkFile(file.path);
+      res.status(200).json({ imagePath: `/upload/image/${result.public_id}` });
+    } catch (error) {
+      console.log(error);
+      next(error);
+    }
   }
-});
+);
 
 module.exports = router;

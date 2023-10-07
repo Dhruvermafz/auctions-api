@@ -13,7 +13,9 @@ exports.uploadImage = (req, res, next) => {
       return res.status(400).json({ error: "No file uploaded" });
     }
 
-    const uploadOptions = { resource_type: "auto" };
+    const uploadOptions = {
+      resource_type: "auto",
+    };
 
     cloudinary.uploader
       .upload_stream(uploadOptions, (error, result) => {
@@ -49,13 +51,13 @@ exports.uploadImage = (req, res, next) => {
       .end(req.file.buffer);
   } catch (error) {
     console.error("Error during image upload:", error);
-    res.status(500).json({ error: "Internal server error" });
+    next(error);
   }
 };
 
 // exports.upload = upload.single("image");
 
-exports.getDownloadURLFromCloud = async (req, res) => {
+exports.getDownloadURLFromCloud = async (req, res, next) => {
   const imageId = req.params.public_id;
 
   try {
@@ -69,6 +71,11 @@ exports.getDownloadURLFromCloud = async (req, res) => {
     res.json({ downloadURL });
   } catch (error) {
     console.error("Error fetching image from Cloudinary:", error);
-    res.status(500).json({ error: "Error fetching image from Cloudinary" });
+    next(error);
   }
+};
+
+exports.errorHandler = (err, req, res, next) => {
+  console.error("Error:", err.message);
+  res.status(500).json({ error: "Internal server error" });
 };
