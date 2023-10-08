@@ -7,6 +7,8 @@ const swaggerDoc = require("./documentation/swaggerSetup");
 const socketio = require("./socket");
 const multer = require("multer");
 const cors = require("cors");
+const httpProxy = require("http-proxy");
+const proxy = httpProxy.createProxyServer({});
 const app = express();
 const server = createServer(app);
 const io = socketio.init(server);
@@ -27,6 +29,7 @@ app.use((req, res, next) => {
     "OPTIONS, GET, POST, PUT, PATCH, DELETE"
   );
   res.setHeader("Access-Control-Allow-Headers", "*");
+
   next();
 });
 // Middleware
