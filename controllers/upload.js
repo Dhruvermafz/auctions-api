@@ -1,5 +1,9 @@
 const cloudinary = require("cloudinary").v2;
 require("dotenv").config();
+import path from "path";
+import { StatusCodes } from "http-status-codes";
+import fs from "fs";
+import { imageObject } from "../utils/imageObject";
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -7,52 +11,86 @@ cloudinary.config({
   api_secret: process.env.SECRET,
 });
 
-exports.uploadImage = (req, res, next) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded" });
-    }
+const uploadImage = async (req, res, next) => {
+  const files = req.files.images;
+  const url = [];
 
-    const uploadOptions = {
-      resource_type: "auto",
-    };
-
-    cloudinary.uploader
-      .upload_stream(uploadOptions, (error, result) => {
-        if (error) {
-          console.error("Error uploading image to Cloudinary:", error);
-          return res.status(500).json({ error: "Error uploading image" });
-        }
-
-        if (!result || !result.secure_url) {
-          console.error("Invalid response from Cloudinary:", result);
-          return res
-            .status(500)
-            .json({ error: "Invalid response from Cloudinary" });
-        }
-
-        const uploadedImage = {
-          public_id: result.public_id,
-          secure_url: result.secure_url,
-          format: result.format,
-          width: result.width,
-          height: result.height,
-        };
-
-        // Check if the format is supported (e.g., you can add more supported formats as needed)
-        const supportedFormats = ["jpg", "jpeg", "png", "gif"];
-        if (!supportedFormats.includes(result.format.toLowerCase())) {
-          console.error("Unsupported image format:", result.format);
-          return res.status(400).json({ error: "Unsupported image format" });
-        }
-
-        res.json({ message: "Image uploaded to Cloudinary", uploadedImage });
+  if (files.length > 1) {
+    await Promise.all(
+      files.map(async (file) => {
+        const result = await cloudinary.uploader.upload(file.tempFilePath, {
+          use_filename: true,
+          folder: "uploads",
+        });
+        fs.unlinkSync(file.tempFilePath);
+        const newImage = imageObject({
+          ulr: result.secure_url,
+          id: result.public_id,
+        });
+        url.unshift(newImage);
       })
-      .end(req.file.buffer);
-  } catch (error) {
-    console.error("Error during image upload:", error);
-    next(error);
+    );
+  } else {
+    const result = await cloudinary.uploader.upload(files.tempFilePath, {
+      use_filename: true,
+      folder: "uploads",
+    });
+    fs.unlinkSync(files.tempFilePath);
+    const newImage = imageObject({
+      url: result.secure_url,
+      id: result.public_id,
+    });
+    url.push(newImage);
   }
+
+  // try {
+  //   if (!req.file) {
+  //     return res.status(400).json({ error: "No file uploaded" });
+  //   }
+
+  //   const uploadOptions = {
+  //     resource_type: "auto",
+  //   };
+
+  //   cloudinary.uploader
+  //     .upload_stream(uploadOptions, (error, result) => {
+  //       if (error) {
+  //         console.error("Error uploading image to Cloudinary:", error);
+  //         return res.status(500).json({ error: "Error uploading image" });
+  //       }
+
+  //       if (!result || !result.secure_url) {
+  //         console.error("Invalid response from Cloudinary:", result);
+  //         return res
+  //           .status(500)
+  //           .json({ error: "Invalid response from Cloudinary" });
+  //       }
+
+  //       const uploadedImage = {
+  //         public_id: result.public_id,
+  //         secure_url: result.secure_url,
+  //         format: result.format,
+  //         width: result.width,
+  //         height: result.height,
+  //       };
+
+  //       // Check if the format is supported (e.g., you can add more supported formats as needed)
+  //       const supportedFormats = ["jpg", "jpeg", "png", "gif"];
+  //       if (!supportedFormats.includes(result.format.toLowerCase())) {
+  //         console.error("Unsupported image format:", result.format);
+  //         return res.status(400).json({ error: "Unsupported image format" });
+  //       }
+
+  //       res.json({ message: "Image uploaded to Cloudinary", uploadedImage });
+  //     })
+  //     .end(req.file.buffer);
+  // } catch (error) {
+  //   console.error("Error during image upload:", error);
+  //   next(error);
+  // }
+
+  console.log(url);
+  return res.status(StatusCodes.OK).json({ url });
 };
 
 // exports.upload = upload.single("image");
@@ -79,3 +117,11 @@ exports.errorHandler = (err, req, res, next) => {
   console.error("Error:", err.message);
   res.status(500).json({ error: "Internal server error" });
 };
+
+const deleteUploadedImage = async (req, res) => {
+  const { id } = req.body;
+  await cloudinary.uploader.destroy(id);
+  res.status(StatusCodes.OK).json({ msg: "Image Deleted!" });
+};
+
+export { uploadImage, deleteUploadedImage };
