@@ -1,15 +1,9 @@
 const cloudinary = require("cloudinary").v2;
 require("dotenv").config();
-import path from "path";
-import { StatusCodes } from "http-status-codes";
-import fs from "fs";
-import { imageObject } from "../utils/imageObject";
-
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.KEY,
-  api_secret: process.env.SECRET,
-});
+const path = require("path");
+const { StatusCodes } = require("http-status-codes");
+const fs = require("fs");
+const { imageObject } = require("../utils/imageObject");
 
 const uploadImage = async (req, res, next) => {
   const files = req.files.images;
@@ -24,7 +18,7 @@ const uploadImage = async (req, res, next) => {
         });
         fs.unlinkSync(file.tempFilePath);
         const newImage = imageObject({
-          ulr: result.secure_url,
+          url: result.secure_url,
           id: result.public_id,
         });
         url.unshift(newImage);
@@ -124,4 +118,8 @@ const deleteUploadedImage = async (req, res) => {
   res.status(StatusCodes.OK).json({ msg: "Image Deleted!" });
 };
 
-export { uploadImage, deleteUploadedImage };
+module.exports = {
+  uploadImage,
+
+  deleteUploadedImage,
+};

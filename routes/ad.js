@@ -1,7 +1,7 @@
 const express = require("express");
 const { body } = require("express-validator");
 const adController = require("../controllers/ad");
-
+const { uploadImage, deleteUploadedImage } = require("../controllers/upload");
 const router = express.Router();
 
 const isAuth = require("../middlewares/isAuth");
@@ -15,13 +15,14 @@ router.post(
   isAuth,
   [
     body("productName", "Invalid productName").trim().not().isEmpty(),
-    body("basePrice", "Invalid basePrice").trim().isNumeric(),
+    body("basePrice", "Inval id basePrice").trim().isNumeric(),
     body("duration", "Invalid duration").trim().isNumeric(),
   ],
-  upload.single("image"),
   adController.addAd
 );
 
+router.route("/uploads").post(uploadImage);
+router.route("/upload/destroy").post(deleteUploadedImage);
 // @route   GET /ad?user=<userId>&option=<active>
 // @desc    Retrieve list of all ads. Optional query param of user.
 // @access  protected
