@@ -13,6 +13,8 @@ const app = express();
 const server = createServer(app);
 const io = socketio.init(server);
 const adIo = socketio.initAdIo(server, "/socket/adpage");
+const notFound = require("./middlewares/notFound");
+const errorHandlerMiddleware = require("./middlewares/errorHandler");
 
 app.use(express.json());
 const corsOptions = {
@@ -49,6 +51,9 @@ app.use("/bid", require("./routes/bid"));
 app.use("/room", require("./routes/room"));
 app.use("/auction", require("./routes/auction"));
 app.use("/upload", require("./routes/uploads"));
+
+app.use(errorHandlerMiddleware);
+app.use(notFound);
 
 // Socket.io logic (move to a separate module if it gets more complex)
 io.on("connection", (socket) => {
