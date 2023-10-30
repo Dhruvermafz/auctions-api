@@ -16,9 +16,10 @@ const adIo = socketio.initAdIo(server, "/socket/adpage");
 const notFound = require("./middlewares/notFound");
 const errorHandlerMiddleware = require("./middlewares/errorHandler");
 
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ limit: "10mb", extended: true }));
 const corsOptions = {
-  origin: ["http://localhost:3000", "https://live-auctions.vercel.app"],
+  origin: ["http://localhost:3000", "https://live-auctions.vercel.app", "https://auctions-api.vercel.app"],
   credentials: true,
   optionSuccessStatus: 200,
 };
