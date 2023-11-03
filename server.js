@@ -16,8 +16,7 @@ const adIo = socketio.initAdIo(server, "/socket/adpage");
 const notFound = require("./middlewares/notFound");
 const errorHandlerMiddleware = require("./middlewares/errorHandler");
 
-app.use(express.json({ limit: "10mb" }));
-app.use(express.urlencoded({ limit: "10mb", extended: true }));
+app.use(express.json());
 const corsOptions = {
   origin: ["http://localhost:3000", "https://live-auctions.vercel.app"],
   credentials: true,
@@ -53,8 +52,8 @@ app.use("/room", require("./routes/room"));
 app.use("/auction", require("./routes/auction"));
 app.use("/upload", require("./routes/uploads"));
 
-app.use(errorHandlerMiddleware);
-app.use(notFound);
+app.use(errorHandlerMiddleware());
+app.use(notFound());
 
 // Socket.io logic (move to a separate module if it gets more complex)
 io.on("connection", (socket) => {
