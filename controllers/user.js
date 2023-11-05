@@ -4,58 +4,60 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
 
-exports.registerUser = async (req, res, next) => {
+exports.registerUser = async (req, res) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({
-        errors: errors.array(),
-      });
+      return res.status(400).json({ errors: errors.array() });
     }
 
-    // Check for existing user
     const { username, email, password, phone, address } = req.body;
-    let user = await User.findOne({ email: email });
+
+    let user = await User.findOne({ email });
+
     if (user) {
-      return res.status(400).json({ errors: [{ msg: "User already exists" }] });
+      return res
+        .status(400)
+        .json({ errors: [{ msg: "User with this email already exists" }] });
     }
 
-    // Encrypt password
     const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
+
     user = new User({
-      username: username,
+      username,
       email,
       password: hashedPassword,
       phone,
       address,
     });
 
-    // Save user
     await user.save();
 
-    // Return jwt
     const payload = {
       user: {
         id: user._id,
-        email,
-        username,
+        email: user.email,
+        username: user.username,
       },
     };
+
     jwt.sign(
       payload,
       process.env.JWT_SECRET,
       { expiresIn: 3600 },
       (err, token) => {
         if (err) {
-          throw err;
+          return res
+            .status(500)
+            .json({ errors: [{ msg: "JWT token generation failed" }] });
         }
         res.status(200).json({ token });
       }
     );
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ errors: [{ msg: "User already exists" }] });
+    console.error(err);
+    res.status(500).json({ errors: [{ msg: "Server error" }] });
   }
 };
 
