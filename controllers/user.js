@@ -16,16 +16,14 @@ exports.registerUser = async (req, res) => {
     let user = await User.findOne({ email });
 
     if (user) {
-      return res
-        .status(400)
-        .json({ errors: [{ msg: "User with this email already exists" }] });
+      return res.status(400).json({ errors: [{ msg: "User already exists" }] });
     }
 
     const salt = await bcrypt.genSalt(12);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     user = new User({
-      username,
+      username: username,
       email,
       password: hashedPassword,
       phone,
@@ -37,8 +35,8 @@ exports.registerUser = async (req, res) => {
     const payload = {
       user: {
         id: user._id,
-        email: user.email,
-        username: user.username,
+        email,
+        username,
       },
     };
 
@@ -67,7 +65,7 @@ exports.getUserById = async (req, res) => {
     const user = await User.findById(id, { password: 0 });
 
     if (!user) {
-      return res.status(404).json({ msg: "User not found" });
+      return res.status(404).json({ msg: "User already exists." });
     }
     res.status(200).json(user);
   } catch (err) {
