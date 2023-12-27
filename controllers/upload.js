@@ -9,7 +9,7 @@ cloudinary.config({
   api_secret: process.env.SECRET,
 });
 
-router.post("/upload", async (req, res) => {
+exports.uploadImage = async (req, res) => {
   try {
     const form = formidable({ multiples: true });
     form.parse(req, async (err, fields, files) => {
@@ -32,6 +32,6 @@ router.post("/upload", async (req, res) => {
     console.error("Upload error:", error);
     return res.status(500).json({ error: "Internal Server Error" });
   }
-});
+};
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const express = require("express");
 const { body } = require("express-validator");
 const adController = require("../controllers/ad");
-const { uploadImage, deleteUploadedImage } = require("../controllers/upload");
+const { uploadImage } = require("../controllers/upload");
 const router = express.Router();
 
 const isAuth = require("../middlewares/isAuth");
