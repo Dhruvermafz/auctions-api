@@ -23,7 +23,7 @@ exports.registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, salt);
 
     user = new User({
-      username: username,
+      username,
       email,
       password: hashedPassword,
       phone,
@@ -35,8 +35,8 @@ exports.registerUser = async (req, res) => {
     const payload = {
       user: {
         id: user._id,
-        email,
-        username,
+        email: user.email,
+        username: user.username,
       },
     };
 
@@ -65,7 +65,7 @@ exports.getUserById = async (req, res) => {
     const user = await User.findById(id, { password: 0 });
 
     if (!user) {
-      return res.status(404).json({ msg: "User already exists." });
+      return res.status(404).json({ msg: "User not found" });
     }
     res.status(200).json(user);
   } catch (err) {
