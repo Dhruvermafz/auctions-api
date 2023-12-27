@@ -50,6 +50,7 @@ app.use("/bid", require("./routes/bid"));
 app.use("/room", require("./routes/room"));
 app.use("/auction", require("./routes/auction"));
 app.use("/upload", require("./controllers/upload"));
+app.use("/feedback", require("./routes/feedback"));
 
 // Socket.io logic (move to a separate module if it gets more complex)
 io.on("connection", (socket) => {
