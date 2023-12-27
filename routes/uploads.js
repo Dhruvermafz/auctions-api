@@ -13,20 +13,22 @@ const {
 const cloudinaryStorage = multer.memoryStorage();
 const uploadCloudinary = multer({ storage: cloudinaryStorage });
 
-// @route   GET /upload/image/:key
-// @desc    Get image with key
+// @route   GET /upload/image/:imageId
+// @desc    Get image with public ID
 // @access  protected
 router.get("/image/:imageId", async (req, res, next) => {
   try {
-    const downloadURL = await getDownloadURLFromCloud(req.params.key);
-
+    const downloadURL = await getDownloadURLFromCloud(req.params.imageId);
     res.status(200).json(downloadURL);
   } catch (error) {
-    console.log(error);
-    next(error);
+    console.error(error);
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
+// @route   POST /upload/image
+// @desc    Upload image to Cloudinary
+// @access  private (requires authentication)
 router.post(
   "/image",
   isAuth,
@@ -38,12 +40,14 @@ router.post(
       if (!file) {
         return res.status(400).json({ error: "No file uploaded" });
       }
+
       const result = await uploadImage(file);
       await unlinkFile(file.path);
+
       res.status(200).json({ imagePath: `/upload/image/${result.public_id}` });
     } catch (error) {
-      console.log(error);
-      next(error);
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
     }
   }
 );

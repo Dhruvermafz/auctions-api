@@ -7,6 +7,7 @@ const swaggerDoc = require("./documentation/swaggerSetup");
 const socketio = require("./socket");
 const multer = require("multer");
 const cors = require("cors");
+const fileUpload = require("express-fileupload");
 const httpProxy = require("http-proxy");
 const proxy = httpProxy.createProxyServer({});
 const app = express();
@@ -48,7 +49,7 @@ app.use("/ad", require("./routes/ad"));
 app.use("/bid", require("./routes/bid"));
 app.use("/room", require("./routes/room"));
 app.use("/auction", require("./routes/auction"));
-app.use("/upload", require("./routes/uploads"));
+app.use("/upload", require("./controllers/upload"));
 
 // Socket.io logic (move to a separate module if it gets more complex)
 io.on("connection", (socket) => {
@@ -77,6 +78,12 @@ adIo.on("connect", (socket) => {
     console.log("User has disconnect from ad");
   });
 });
+
+app.use(
+  fileUpload({
+    createParentPath: true,
+  })
+);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
