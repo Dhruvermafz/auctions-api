@@ -5,8 +5,8 @@ Potential buyers can find the advertisements and bid on them. Auction pages have
 Users also receive a notification once an auction starts/ends.
 
 ### Links
-- <a href="https://live-auctions.netlify.app/"><strong>live website</strong></a>
-- <a href="https://auction-api-xbhd.onrender.com/"><strong>api hosted on.</strong></a>
+- <a href="https://live-auctions.vercel.app/"><strong>Live Auctions</strong></a>
+- <a href="https://auction-api-xbhd.onrender.com/"><strong>API Hosted on</strong></a>
   <br>
   <br>
 
@@ -34,15 +34,13 @@ Frontend (Web application):
 Database:
 - Mongodb
 
-Storage:
-- AWS S3 Bucket
 
 Hosting:
-- Heroku (server)
-- Netlify (client)
+- Render (server)
+- Vercel (client)
 
 
 
 # Notes on using the website
-Project is hosted <a href="https://live-auctions.netlify.app/"><strong>here</strong></a>
+Project is hosted <a href="https://live-auctions.vercel.app/"><strong>here</strong></a>
 - If you do not want to register, press the skip button during login. This will log you in as a test user (test@test.com).

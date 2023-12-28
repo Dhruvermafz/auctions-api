@@ -1,6 +1,9 @@
 const swaggerJsDoc = require("swagger-jsdoc");
 
-const apiBaseUrl = process.env.API_BASE_URL || "http://localhost:4000";
+const apiBaseUrl = process.env.API_BASE_URL || [
+  "http://localhost:4000",
+  "https://auction-api-xbhd.onrender.com",
+];
 const options = {
   apis: ["./documentation/doc.yaml"],
   definition: {

@@ -1,11 +1,10 @@
 const express = require("express");
 const { body } = require("express-validator");
 const adController = require("../controllers/ad");
-const { uploadImage } = require("../controllers/upload");
+
 const router = express.Router();
 
 const isAuth = require("../middlewares/isAuth");
-const { multer } = require("../utils/multermediaupload");
 
 // @route   POST /ad
 // @desc    Post a new ad
@@ -20,8 +19,6 @@ router.post(
   ],
   adController.addAd
 );
-
-router.route("/uploads").post(uploadImage);
 
 // @route   GET /ad?user=<userId>&option=<active>
 // @desc    Retrieve list of all ads. Optional query param of user.
