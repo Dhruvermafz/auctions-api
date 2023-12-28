@@ -1,4 +1,3 @@
-const router = require("express").Router();
 const cloudinary = require("cloudinary");
 const formidable = require("formidable");
 require("dotenv").config();
@@ -20,7 +19,7 @@ exports.uploadImage = async (req, res) => {
 
       const image = await cloudinary.uploader.upload(files.image.path, {
         resource_type: "image",
-        public_id: `users/${req.userid}/${files.name}`,
+        public_id: `users/${req.userid}/${fields.name}`,
         crop: "scale",
         quality: "auto",
       });
@@ -33,5 +32,3 @@ exports.uploadImage = async (req, res) => {
     return res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
-module.exports = router;

@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/anagh07/live_auctions.git"
+    "url": "git+https://github.com/Dhruvermafz/auctions_api.git"
   },
-  "author": "",
+  "author": "Dhruv Verma",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/anagh07/live_auctions/issues"
+    "url": "https://github.com/Dhruvermafz/auctions_api/issues"
   },
-  "homepage": "https://github.com/anagh07/live_auctions#readme",
+  "homepage": "https://github.com/Dhruvermafz/auctions_api#readme",
   "dependencies": {
     "axios": "^0.24.0",
     "bcryptjs": "^2.4.3",

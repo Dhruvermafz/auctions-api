@@ -49,7 +49,7 @@ app.use("/ad", require("./routes/ad"));
 app.use("/bid", require("./routes/bid"));
 app.use("/room", require("./routes/room"));
 app.use("/auction", require("./routes/auction"));
-app.use("/upload", require("./controllers/upload"));
+app.use("/upload", require("./routes/upload"));
 app.use("/feedback", require("./routes/feedback"));
 
 // Socket.io logic (move to a separate module if it gets more complex)
