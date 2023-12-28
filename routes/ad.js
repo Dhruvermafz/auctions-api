@@ -5,7 +5,7 @@ const { uploadImage } = require("../controllers/upload");
 const router = express.Router();
 
 const isAuth = require("../middlewares/isAuth");
-const { upload } = require("../utils/multermediaupload");
+const { multer } = require("../utils/multermediaupload");
 
 // @route   POST /ad
 // @desc    Post a new ad
@@ -22,7 +22,7 @@ router.post(
 );
 
 router.route("/uploads").post(uploadImage);
-router.route("/upload/destroy").post(deleteUploadedImage);
+
 // @route   GET /ad?user=<userId>&option=<active>
 // @desc    Retrieve list of all ads. Optional query param of user.
 // @access  protected
