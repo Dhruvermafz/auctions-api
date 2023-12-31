@@ -9,7 +9,7 @@ const connectDb = async () => {
     console.log("### Mongo DB connected...");
   } catch (err) {
     console.log(err);
-    // Quit server if db connection fails
+    console.log(`Connection Failed to DB: ${err}`);
     process.exit(1);
   }
 };

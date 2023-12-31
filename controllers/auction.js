@@ -1,3 +1,4 @@
+const { BadRequestError } = require("../errors/badRequest");
 const Ad = require("../models/Ad");
 const User = require("../models/User");
 const io = require("../socket");
@@ -58,13 +59,11 @@ exports.startAuction = async (req, res, next) => {
         let winner = await User.findById(auctionEndAd.currentBidder);
         winner.purchasedProducts.push(auctionEndAd._id);
         await winner.save();
-        io.getAdIo()
-          .to(auctionEndAd._id.toString())
-          .emit("auctionEnded", {
-            action: "sold",
-            ad: auctionEndAd,
-            winner: winner,
-          });
+        io.getAdIo().to(auctionEndAd._id.toString()).emit("auctionEnded", {
+          action: "sold",
+          ad: auctionEndAd,
+          winner: winner,
+        });
       } else {
         io.getAdIo()
           .to(auctionEndAd._id.toString())
@@ -127,13 +126,11 @@ exports.runTimer = async (ad) => {
           await winner.save();
 
           // Emit an event to notify clients that the auction is sold
-          io.getAdIo()
-            .to(auctionEndAd._id.toString())
-            .emit("auctionEnded", {
-              action: "sold",
-              ad: auctionEndAd,
-              winner: winner,
-            });
+          io.getAdIo().to(auctionEndAd._id.toString()).emit("auctionEnded", {
+            action: "sold",
+            ad: auctionEndAd,
+            winner: winner,
+          });
         } else {
           // If there is no current bidder, the ad is not sold
           io.getAdIo()
@@ -147,5 +144,99 @@ exports.runTimer = async (ad) => {
     }, 1000);
   } catch (err) {
     console.log(err);
+  }
+};
+
+// @route   POST /auction/winner/:adId
+// @desc    Declare auction winner
+exports.declareWinner = async (req, res, next) => {
+  const { adId } = req.params;
+  try {
+    let ad = await Ad.findById(adId).populate("owner", { password: 0 });
+    if (!ad) return res.status(400).json({ errors: [{ msg: "Ad not found" }] });
+
+    // Check if the auction has ended
+    if (!ad.auctionEnded)
+      return res
+        .status(400)
+        .json({ errors: [{ msg: "Auction not ended yet" }] });
+
+    // Check if the user making the request is the owner of the ad
+    if (ad.owner._id != req.user.id)
+      return res
+        .status(400)
+        .json({ errors: [{ msg: "Unauthorized to declare winner" }] });
+
+    // Check if the ad has already been declared as sold
+    if (ad.sold)
+      return res
+        .status(400)
+        .json({ errors: [{ msg: "Ad has already been sold" }] });
+
+    // Check if there is a current bidder
+    if (!ad.currentBidder)
+      return res.status(400).json({ errors: [{ msg: "No current bidder" }] });
+
+    // Set the ad as sold
+    ad.sold = true;
+    ad.purchasedBy = ad.currentBidder;
+    await ad.save();
+
+    // Add the product to the winner's purchasedProducts array
+    let winner = await User.findById(ad.currentBidder);
+    winner.purchasedProducts.push(ad._id);
+    await winner.save();
+
+    // Emit an event to notify clients that the auction is sold
+    io.getAdIo()
+      .to(ad._id.toString())
+      .emit("auctionEnded", { action: "sold", ad: ad, winner: winner });
+
+    res.status(200).json({ msg: "Auction winner declared" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ errors: [{ msg: "Server error" }] });
+  }
+};
+
+// @route   POST /auction/end/:adId
+// @desc    End auction without a winner
+exports.endAuction = async (req, res, next) => {
+  const { adId } = req.params;
+  try {
+    let ad = await Ad.findById(adId).populate("owner", { password: 0 });
+    if (!ad) return res.status(400).json({ errors: [{ msg: "Ad not found" }] });
+
+    // Check if the auction has ended
+    if (!ad.auctionEnded)
+      return res
+        .status(400)
+        .json({ errors: [{ msg: "Auction not ended yet" }] });
+
+    // Check if the user making the request is the owner of the ad
+    if (ad.owner._id != req.user.id)
+      return res
+        .status(400)
+        .json({ errors: [{ msg: "Unauthorized to end auction" }] });
+
+    // Check if the ad has already been declared as sold
+    if (ad.sold)
+      return res
+        .status(400)
+        .json({ errors: [{ msg: "Ad has already been sold" }] });
+
+    // Set the ad as not sold
+    ad.sold = false;
+    await ad.save();
+
+    // Emit an event to notify clients that the auction is not sold
+    io.getAdIo()
+      .to(ad._id.toString())
+      .emit("auctionEnded", { action: "notSold", data: ad });
+
+    res.status(200).json({ msg: "Auction ended without winner" });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ errors: [{ msg: "Server error" }] });
   }
 };

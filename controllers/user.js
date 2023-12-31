@@ -1,7 +1,6 @@
 const { validationResult } = require("express-validator");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-
 const User = require("../models/User");
 
 exports.registerUser = async (req, res) => {
@@ -11,7 +10,7 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { username, email, password, phone, address } = req.body;
+    const { username, email, password, phone, address, avatar } = req.body;
 
     let user = await User.findOne({ email });
 
@@ -28,6 +27,7 @@ exports.registerUser = async (req, res) => {
       password: hashedPassword,
       phone,
       address,
+      avatar: user.avatar,
     });
 
     await user.save();
@@ -37,6 +37,9 @@ exports.registerUser = async (req, res) => {
         id: user._id,
         email: user.email,
         username: user.username,
+        phone: user.phone,
+        avatar: user.avatar,
+        address: user.address,
       },
     };
 
